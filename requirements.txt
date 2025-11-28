@@ -1,0 +1,12 @@
+pyTelegramBotAPI
+fpdf
+Pillow
+docx2pdf
+pdf2docx
+PyPDF2
+opencv-python
+numpy
+python-dotenv
+qrcode[pil]
+rembg
+onnxruntime

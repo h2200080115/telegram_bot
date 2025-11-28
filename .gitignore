@@ -1,0 +1,11 @@
+.qodo
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.log
+output/
+logs/
+user_data.db
+.DS_Store
