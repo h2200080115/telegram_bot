@@ -43,7 +43,7 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 
-FONT_PATH = os.path.join(os.path.dirname(__file__), "QECarolineMutiboko.ttf")
+FONT_PATH = os.path.join(os.path.dirname(__file__), "Karthikeya-Regular.ttf")
 OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
