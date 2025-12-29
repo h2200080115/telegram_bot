@@ -7,7 +7,9 @@ import sqlite3
 from telebot import types
 from fpdf import FPDF
 from PIL import Image, ImageDraw, ImageFont
-from docx2pdf import convert
+import subprocess
+import threading
+from flask import Flask
 from pdf2docx import Converter
 from PyPDF2 import PdfReader, PdfWriter, PdfMerger
 import sys
@@ -950,7 +952,11 @@ def handle_files(message):
                 out_path = file_path
                 if context == 'word_to_pdf':
                     out_path = file_path.replace(".docx", ".pdf")
-                    convert(file_path, out_path)
+                    # convert(file_path, out_path) - Removed for Linux compatibility
+                    subprocess.run([
+                        'libreoffice', '--headless', '--convert-to', 'pdf',
+                        '--outdir', os.path.dirname(out_path), file_path
+                    ], check=True)
                 elif context == 'pdf_to_word':
                     out_path = file_path.replace(".pdf", ".docx")
                     cv = Converter(file_path)
@@ -1066,7 +1072,23 @@ def handle_files(message):
             else:
                 bot.reply_to(message, "❌ Please send an image file.")
 
+# Web server to keep the bot alive on Render
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run_http():
+    app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 10000)))
+
+def keep_alive():
+    t = threading.Thread(target=run_http)
+    t.start()
+
 # Start bot with error handling
+if __name__ == "__main__":
+    keep_alive()
 while True:
     try:
         bot.infinity_polling(timeout=60, long_polling_timeout=60)
