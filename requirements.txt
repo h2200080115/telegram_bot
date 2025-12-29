@@ -10,3 +10,5 @@ qrcode[pil]
 rembg
 onnxruntime
 flask
+pytesseract
+
