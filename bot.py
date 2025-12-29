@@ -757,7 +757,7 @@ def handle_menu_selection(call):
     markup.add(types.InlineKeyboardButton("📋 Menu", callback_data='main_menu'))
     bot.send_message(chat_id, "📋 Use the menu to switch tasks:", reply_markup=markup)
 
-@bot.message_handler(content_types=['document'])
+@bot.message_handler(content_types=['document', 'photo'])
 def handle_files(message):
     chat_id = message.chat.id
     user_id = log_user(message)
@@ -775,9 +775,26 @@ def handle_files(message):
         user_temp_files[chat_id] = []
     
     try:
-        file_info = bot.get_file(message.document.file_id)
+        file_id = None
+        file_name = None
+        
+        if message.content_type == 'document':
+            file_id = message.document.file_id
+            file_name = message.document.file_name
+        elif message.content_type == 'photo':
+            # Get largest photo
+            file_id = message.photo[-1].file_id
+            file_name = f"image_{uuid.uuid4()}.jpg" # Default name for photos
+
+        file_info = bot.get_file(file_id)
         file_data = bot.download_file(file_info.file_path)
-        ext = os.path.splitext(message.document.file_name)[-1].lower()
+        
+        # Determine extension
+        if message.content_type == 'document':
+             ext = os.path.splitext(file_name)[-1].lower()
+        else:
+             ext = ".jpg" 
+             
         file_path = os.path.join(OUTPUT_DIR, f"{uuid.uuid4()}{ext}")
         
         with open(file_path, 'wb') as f:
@@ -786,10 +803,9 @@ def handle_files(message):
         user_temp_files[chat_id].append(file_path)
 
         # Log the file upload
-        if message.document and message.document.file_name:
-            log_action(user_id, f"file_upload_{context}", 
-                      f"User uploaded file for {context}", 
-                      message.document.file_name)
+        log_action(user_id, f"file_upload_{context}", 
+                   f"User uploaded file for {context}", 
+                   file_name)
 
         if context == 'handwritten':
             if not file_path.endswith(".txt"):
