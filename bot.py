@@ -1104,11 +1104,19 @@ def keep_alive():
 
 # Start bot with error handling
 if __name__ == "__main__":
-    keep_alive()
-while True:
-    try:
-        bot.infinity_polling(timeout=60, long_polling_timeout=60)
-    except Exception as e:
-        logger.error(f"Bot polling error: {e}")
-        time.sleep(2)
-        continue
+    # Start the bot polling in a separate thread so it doesn't block the web server
+    def start_bot():
+        while True:
+            try:
+                bot.infinity_polling(timeout=60, long_polling_timeout=60)
+            except Exception as e:
+                logger.error(f"Bot polling error: {e}")
+                time.sleep(2)
+                continue
+    
+    bot_thread = threading.Thread(target=start_bot)
+    bot_thread.daemon = True
+    bot_thread.start()
+    
+    # Run the web server in the main thread for Render
+    run_http()
